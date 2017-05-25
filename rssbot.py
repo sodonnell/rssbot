@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""hourly.py
+"""rssbot.py
 
 	This is the Python version of the Automated RSS Feed "Engine" 
 	used to collect data for the rssbot.org project, which was running 
