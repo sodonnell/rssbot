@@ -80,7 +80,9 @@ class PyRSSbot:
         title = title.encode('utf-8')
         title = title.replace("'","\'")
         title = title.replace('"','\"')
+        title = title.replace(';','')
         link = link.encode('utf-8')
+        link = link.replace(';','')
         cursor = self.conn.cursor()
         if pubdate:
             sql = "INSERT IGNORE INTO tbl_rss_archive ( pid, title, link, feed_id, pubdate ) VALUES (%s,%s,%s,%s,%s)"
@@ -95,32 +97,32 @@ class PyRSSbot:
         return id
 
         def add_link_if_not_exists(self,pid,title,link,pubdate=''):
-                title = title.encode('utf-8')
-                title = title.replace("'","\'")
-                title = title.replace('"','\"')
-                link = link.encode('utf-8')
-                cursor = self.conn.cursor()
-        sql = "SELECT count(id) AS existing_id FROM tbl_rss_archive WHERE link = '%s'"
-        cursor.execute(sql,link)
-        self.existing_link = cursor.fetchall()
-        cursor.close()
-
-        if self.existing_link.existing_id < 1:
+            title = title.encode('utf-8')
+            title = title.replace(';','')
+            link = link.encode('utf-8')
+            link = link.replace(';','')
             cursor = self.conn.cursor()
+            sql = "SELECT count(id) AS existing_id FROM tbl_rss_archive WHERE link = '%s'"
+            cursor.execute(sql,link)
+            self.existing_link = cursor.fetchall()
+            cursor.close()
 
-                    if pubdate:
-                            sql = "INSERT IGNORE INTO tbl_rss_archive ( pid, title, link, feed_id, pubdate ) VALUES (%s,%s,%s,%s,%s)"
-                            cursor.execute(sql, (pid,title,link,pid,pubdate))
-                    else:
-                            sql = "INSERT IGNORE INTO tbl_rss_archive ( pid, title, link, feed_id, pubdate) VALUES (%s,%s,%s,%s,NOW())"
-                            cursor.execute(sql, (pid,title,link,pid))
-                                
-                    self.conn.commit()
-                    id = cursor.lastrowid
-                    cursor.close()
-                    return id
-        else:
-            return 0
+            if self.existing_link.existing_id < 1:
+                cursor = self.conn.cursor()
+
+                if pubdate:
+                    sql = "INSERT IGNORE INTO tbl_rss_archive ( pid, title, link, feed_id, pubdate ) VALUES (%s,%s,%s,%s,%s)"
+                    cursor.execute(sql, (pid,title,link,pid,pubdate))
+                else:
+                    sql = "INSERT IGNORE INTO tbl_rss_archive ( pid, title, link, feed_id, pubdate) VALUES (%s,%s,%s,%s,NOW())"
+                    cursor.execute(sql, (pid,title,link,pid))
+                            
+                self.conn.commit()
+                id = cursor.lastrowid
+                cursor.close()
+                return id
+            else:
+                return 0
 
 i=0
 j=0
@@ -153,7 +155,7 @@ if rssbot.feeds_count > 0:
                         if 'pubDate' in entry:
                             id = rssbot.add_link_if_not_exists(feed[2],entry.title,entry.link,entry.pubDate)
                         else:
-                            id = rssbot.add_link_if_not_exists(feed[2],entry.title,entry.link)
+                            id = rssbot.add_link_if_not_exists(feed[2],entry.link)
 
                         try:
                             if id > 0:
